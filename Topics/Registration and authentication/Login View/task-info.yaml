@@ -1,0 +1,17 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    from django.contrib.auth.views import LoginView
+
+
+    class MyLoginView:
+        ...
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/7761#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Sat, 27 Aug 2022 13:11:53 UTC
+record: -1

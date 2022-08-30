@@ -1,0 +1,8 @@
+<h2>Get Several Objects at a Time</h2>
+<p>You have a model <em>Car </em>with fields <em>speed</em> and <em>color</em>:</p>
+
+<pre><code class="language-python">class Car(models.Model):
+    color = models.CharField(max_length=32)
+    speed = models.FloatField()</code></pre>
+
+<p>What happens if you call <em>get</em> method of Car's manager for multiple objects?</p>

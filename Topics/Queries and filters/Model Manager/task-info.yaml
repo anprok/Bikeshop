@@ -1,0 +1,19 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: To convert one model into another
+- text: To manage the instances of a Model one at a time
+- text: To get a single object or a set of objects from the database and modify them
+    if needed
+- text: To manage the work with model migrations
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/7006#comment
+status: Solved
+record: -1
+local_check: false

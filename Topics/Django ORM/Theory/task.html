@@ -1,0 +1,79 @@
+<h2>Django ORM</h2>
+<html><body><h5 id="working-with-a-database-from-python">Working With a Database From Python</h5>
+<p>Chances are, the storage you most often work with is a file system. It works well for HTML pages and templates, but how do you keep small objects like login, age or, say, favorite color for each individual person? Relational databases can help you organize and manipulate such data.</p>
+<p>We will start from scratch and learn how to work with databases using only Python. </p>
+<p>We define models to describe the schema of our data. To convert Python objects and primitives to database types, we will use adaptor classes, Fields. These abstractions help us pay less attention to the database specifics and focus mainly on what to store and how.</p>
+<p>Once we declare the models and the fields in them, we create migrations and apply them to the SQLite3 database. Feel free to change it to another <a href="https://docs.djangoproject.com/en/2.2/ref/databases/" rel="noopener noreferrer nofollow" target="_blank">database backend</a>. No matter which database you choose, our code will remain valid.</p>
+<h5 id="relational-databases">Relational Databases</h5>
+<p>If your first thought is <em>"I need to keep the data with a common structure"</em>, then your second thought should surely be "databases".</p>
+<p>A <strong>relational database</strong> is a collection of multiple data sets organized by tables, records, and columns. It works fine for most types of data. Each implementation provides you the universal language called structured query language (SQL). You can <a href="https://www.studytonight.com/dbms/introduction-to-sql.php" rel="noopener noreferrer nofollow" target="_blank">read about it</a>, but as we said, we will work with the database in another way. </p>
+<p>The most popular databases are PostgreSQL, Oracle SQL, MS SQL, and MySQL. There is also a simple database that works on your smartphone in many applications: it's called SQLite. It's perfect for one-client use and trying out Django models for the first time. SQLite is included in the list of libraries for Django by default, so you probably already have it.<span style="color: #66cc66;"> </span>Check whether you have it on your computer:</p>
+<pre><code class="language-bash">sqlite3 --version</code></pre>
+<p>If you don't, try to install it with your package manager or download it from <a href="https://www.sqlite.org/download.html" rel="noopener noreferrer nofollow" target="_blank">the official site</a>.</p>
+<h5 id="object-relational-mapping">Object-Relational Mapping</h5>
+<p>With the fall approaching and clouds getting denser, the new season of Quidditch is starting. As you know, wizards really lack computer science classes in Hogwarts, even though programming is a kind of magic. They want to store the teams, their results and the rosters on the website, and they wonder if there is a way to do it with Django. Well, there sure is! For this purpose, we will make the <em>quidditch</em> project with the <em>tournament</em> app in it. Let's meet and greet Django Models!</p>
+<p><strong>Django Models</strong> are classes that map the objects from the real world to the database records. We have teams, so we call our model the <em>Team</em>. This approach is called <strong>Object-Relational Mapping</strong>(<strong>ORM</strong>).</p>
+<p>The <strong>ORM</strong> is a concept to map one type system to the other. We will work with databases by means of Python classes and methods. Our strong side is the programming language and we are going to make the most of it. The objects are similar to database records and their methods resemble SQL commands. There's no need to know SQL directly as we apply the instruments that imitate it.</p>
+<p>To tell Django that it's a special class which maps its structure to the database table, we inherit the <code class="language-bash">Team</code> from <code class="language-bash">django.models.Model</code>. Also, we have players and game tables. Suppose we have a django project <em>quidditch</em> with an application <em>tournament</em>. Let's make the stubs for our classes in <em>tournament/models.py</em> module:</p>
+<pre><code class="language-python">from django.db import models
+
+
+class Team(models.Model):
+    name = ...
+
+
+class Player(models.Model):
+    height= ...
+    name = ...
+    team = ...
+
+
+class Game(models.Model):
+    date = ...
+    home_team = ...
+    home_team_points = ... 
+    rival_team = ...
+    rival_team_points = ...</code></pre>
+<p>We gave names to our classes and described their content. The restriction of all relational databases is that we should define the types for all the fields in the Model. So how can we match the types with the fields?</p>
+<h5 id="fields">Fields</h5>
+<p>To get most of the database's features, we use special <em>Fields</em> classes. They map the attribute of the class to a particular column in the database table. Does it mean we need the instance of a class for each field? Yes, but don't worry, it's actually easier than it may seem.</p>
+<p>To build the whole schema, we start from the core element, the <em>Team:</em></p>
+<pre><code class="language-python">class Team(models.Model):
+    name = models.CharField(max_length=64)</code></pre>
+<p><code class="language-bash">CharField</code> is similar to Python string but has one restriction: the length limit. "<em>Wigtown Wanderers</em>" is the longest team name in the league now, but the league is still open to new teams, so we ensure <code class="language-bash">max_length</code> with 64 symbols.</p>
+<p>Each team has players. Let's define a model for a player:</p>
+<pre><code class="language-python">class Player(models.Model):
+    height = models.FloatField()
+    name = models.CharField(max_length=64)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)</code></pre>
+<p>We already know what the <code class="language-bash">CharField</code> means, so the <code class="language-bash">FloatField</code> should sound familiar to you, too. It's the same as Python's <code class="language-bash">float</code> type. What's more interesting is the <code class="language-bash">ForeignKey</code> field. It means that the player is bound to a specific <em>Team</em> and the restriction <code class="language-bash">on_delete=models.CASCADE</code> means that if the Team is deleted from the database, it will be erased with all the players. That sounds unfair, but you should try harder to stay in the league!</p>
+<pre><code class="language-python">class Game(models.Model):
+    home_team = models.ForeignKey(Team, related_name='game_at_home', on_delete=models.CASCADE)
+    home_team_points = models.IntegerField()
+    rival_team = models.ForeignKey(Team, related_name='rival_game', on_delete=models.CASCADE)
+    rival_team_points = models.IntegerField()
+    date = models.DateField()</code></pre>
+<p>There are no games without teams, so again we set <code class="language-bash">on_delete=models.CASCADE</code> for each <code class="language-bash">ForeignKey</code>. Also, we add the <code class="language-bash">related_name</code> for the <em>Game</em> model, by which we can access it from the <em>Team</em> model. It's necessary to add such names because we have two foreign keys to the <em>Team</em> and you should differ one from another.</p>
+<p>Points is an <code class="language-bash">int</code> type, so we make it <code class="language-bash">IntegerField</code>, and the date is clearly a <code class="language-bash">DateField</code>.</p>
+<p>You can think of <em>Fields</em> as expansions of Python's primitive types for simple cases like <code class="language-bash">IntegerField</code>, <code class="language-bash">CharField</code>, and <code class="language-bash">FloatField</code>. They also have special cases like <code class="language-bash">ForeignKey</code> and other <a href="https://docs.djangoproject.com/en/2.2/topics/db/models/#relationships" rel="noopener noreferrer nofollow" target="_blank">relations between objects</a>.</p>
+<h5 id="migrations">Migrations</h5>
+<p>At this point, we describe the mappings between Python classes and database tables, but we don't have any tables yet. That's sad news. Should we learn some fancy SQL to create a database and tables in it? No, because we can simply describe to Django what we want and it will do the dirty work for us — again.</p>
+<p>Add tournament to <code class="language-bash">INSTALLED_APPS</code> in the <em>quidditch/settings.py </em>module:</p>
+<pre><code class="language-python">INSTALLED_APPS = [
+    # other installed apps
+    'tournament',
+]</code></pre>
+<p>We have the schema of the league in our code, we are ready to migrate it to the database. It takes two steps:</p>
+<pre><code class="language-bash">python manage.py makemigrations
+python manage.py migrate</code></pre>
+<p>The first command creates migrations. <strong>Migration</strong> is a piece of code that describes what actions should be done in the database to synchronize the models with the tables. You can find the created code in the <em>tournament/migrations/0001_initial.py </em>file.</p>
+<p>In the second step, we apply the changes and run the generated commands.</p>
+<p> </p>
+<p>Preceding <code class="language-bash">manage.py &lt;command&gt;</code> with <code class="language-bash">python</code> is the platform-independent way to launch any django command. It's a valid syntax for both Unix and Windows systems.</p>
+<p> </p>
+<p>In PyCharm IDE you can open the terminal tab and write these commands there.<span style="color: #66cc66;"> </span>If you want to make and then apply migrations to a particular application in your project, you should add the application name after each command:</p>
+<pre><code class="language-bash">python manage.py makemigrations tournament
+python manage.py migrate tournament</code></pre>
+<p>When you run these commands, your database will finally have the tables to work with.</p>
+<h5 id="conclusion">Conclusion</h5>
+<p>Now you are familiar with <em>models </em>and ORM. There are many types of fields in django. You can read about the different fields in the <a href="https://docs.djangoproject.com/en/4.0/ref/models/fields/" rel="noopener noreferrer nofollow" target="_blank">documentation</a>. Try and create your own models!</p></body></html>

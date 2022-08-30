@@ -1,0 +1,26 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    from django.db import models
+
+
+    class Team(models.Model):
+        name = models.CharField(max_length=64)
+
+        class Meta:
+            app_label = 'tournament'
+
+
+    class League(models.Model):
+
+        class Meta:
+            app_label = 'tournament'
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/6840#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Fri, 26 Aug 2022 12:02:21 UTC
+record: -1

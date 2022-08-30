@@ -1,0 +1,19 @@
+type: choice
+is_multiple_choice: true
+options:
+- text: Input validation
+- text: Extracting of raw submitted data
+- text: Rendering of HTML form input elements
+- text: Receiving and processing submitted forms and data from the client
+- text: Creating HTML forms for the data
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19520#comment
+status: Solved
+record: -1
+local_check: false

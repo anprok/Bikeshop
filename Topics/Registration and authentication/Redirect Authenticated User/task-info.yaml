@@ -1,0 +1,18 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: To not show the authentication form to the user again
+- text: To redirect users to an external service
+- text: To redirect the user to the logout page
+- text: To forbid the user to login again
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/7757#comment
+status: Solved
+record: -1
+local_check: false

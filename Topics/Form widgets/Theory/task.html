@@ -1,0 +1,228 @@
+<h2>Form widgets</h2>
+<p>For web applications, it's natural not only to provide information but also to receive it. Developers rely on form fields when users want to submit something. Django automatically uses default <strong>widgets</strong> for each form field, but they are not optimal for every task. In this topic, we will discuss widgets in Django and learn how to use them to tweak your form fields more effectively.</p>
+
+<h5 id="how-widgets-work">How widgets work</h5>
+
+<p>Let me introduce you to Peter, an indie developer who wants to design his own game. This is too much for a single person, so Peter decided to hire a few colleagues. Peter is a busy fellow, so he needs your help to build a page to accept candidate applications. For that task, we are going to use Django with its form fields and widgets.</p>
+
+<p>A widget is an element that allows you to modify the HTML input element through Django. A widget renders HTML and retrieves data from the <code class="language-python">GET</code>/<code class="language-python">POST</code> dictionary of a respective widget.</p>
+
+<p>If you use form fields without specifying widgets, Django will use the default widget that's appropriate for the displayed data type. You can find out which widgets Django uses by default for each data type in the <span style="color: #000000;"><a target="_blank" target="_blank" target="_blank" target="_blank" href="https://docs.djangoproject.com/en/4.0/ref/forms/fields/#built-in-fields" rel="noopener noreferrer nofollow">Built-in Field class</a> documentation.</span></p>
+
+<p>But the default widget is not always the most appropriate one. Let's assume that Peter the Developer wants to ask the following question: "Why do you want to work on my game?" For that, you need to implement a comment field. You can create <code class="language-python">CharField</code>; Django uses <code class="language-python">TextInput</code> as the default widget and renders a one-line field on the site:</p>
+
+<pre><code class="language-python">from django import forms
+
+
+class MotivationalForm(forms.Form):
+    motivational = forms.CharField(
+    label="Why do you want on my game?"
+    )</code></pre>
+
+<p>The field will look like this:</p>
+
+<p><img alt="" height="107" name="2022-03-08 17_34_53-Window.png" src="https://ucarecdn.com/7e9b0fca-1a0d-4eab-b45e-568b263f0f0a/" width="561"></p>
+
+<p>This line looks quite ugly; you need something wider. You can apply the <code class="language-python">Textarea</code> widget:</p>
+
+<pre><code class="language-python">class MotivationalForm(forms.Form):
+    motivational = forms.CharField(
+    label="Why do you want to work on my game?",
+    widget=forms.Textarea()
+    )
+</code></pre>
+
+<p>The field will appear like this:</p>
+
+<p><img alt="" height="315" name="2022-03-08 17_34_24-Window.png" src="https://ucarecdn.com/244ca469-c079-4d91-909d-81551370c9d2/-/crop/529x315/0,0/-/preview/" width="529"></p>
+
+<p>To be clear, take a look at the diagram showing the difference between form fields and widgets:</p>
+
+<p><img alt="" height="411" name="widgets.png" src="https://ucarecdn.com/68e769fb-14b5-4d42-9af5-2822c6d19d38/" width="960"></p>
+
+<p>Let's try to use widgets and help Peter find like-minded folks.</p>
+
+<h5 id="default-widgets">Default widgets</h5>
+
+<p>Let's create a job application form. We'll ask for the applicant's name first. A one-line text field is pretty convenient for this. To render it, use <code class="language-python">TextInput</code>, the default widget used for <code class="language-python">CharField</code>:</p>
+
+<pre><code class="language-python">class NameForm(forms.Form):
+    name = forms.CharField(label="Your Name")</code></pre>
+
+<p>The field will appear on the site that way:</p>
+
+<p><img alt="" height="116" name="2022-03-08 17_32_35-Window.png" src="https://ucarecdn.com/2753affc-7cc4-4685-9c61-beb97c02fa58/" width="540"></p>
+
+<p>The default solution works fine because Peter needs to ask the name only.</p>
+
+<h5 id="non-default-widgets">Non-default widgets</h5>
+
+<p>To discover the skills of potential employees, Peter decided to make a selection form. <code class="language-python">MultipleChoiceField</code> and its <code class="language-python">CheckboxSelectMultiple</code> widget will help us. The form field will output skills in the <code class="language-python">SKILLS</code> list, and the widget will display them as checkboxes:</p>
+
+<pre><code class="language-python">SKILLS = [
+    ('cpp', 'C++'),
+    ('unreal', 'Unreal Engine'),
+    ('3d', '3D Modelling'),
+]
+
+
+class SkillsForm(forms.Form):
+    skills = forms.MultipleChoiceField(
+    label="What skills do you have?",
+    required=False,
+    widget=forms.CheckboxSelectMultiple(),
+    choices=SKILLS,
+    )</code></pre>
+
+<p>A potential employee will see this:</p>
+
+<p><img alt="" height="178" name="2022-03-10 14_14_19-Создание города — Mozilla Firefox.png" src="https://ucarecdn.com/8a9a96c1-8127-4a4a-8570-8784004ab5c1/" width="462"></p>
+
+<p>After that, Peter wants to specify a preferrable role. We'll create a choice list with a <code class="language-python">ChoiceField</code> with the <code class="language-python">RadioSelect</code> widget:</p>
+
+<pre><code class="language-python">CHOICES = [
+    ('programmer', 'C++ Programmer'),
+    ('modeller', '3D Modeller'),
+]
+
+
+class RoleForm(forms.Form):
+    roles = forms.ChoiceField(
+    label="What role are you applying for?",
+    required=False,
+    widget=forms.RadioSelect(),
+    choices=CHOICES,
+    )</code></pre>
+
+<p>This is how it appears on the site:</p>
+
+<p><img alt="" height="156" name="2022-03-10 14_14_28-Создание города — Mozilla Firefox.png" src="https://ucarecdn.com/f75d1b6f-3144-45ad-ba3b-4a7a8e2e2fea/" width="568"></p>
+
+<p>At this point, you've discovered how to handle non-default widgets. But that's not the whole story; you can customize widgets and add some attributes.</p>
+
+<h5 id="how-to-add-widget-attributes">How to add widget attributes</h5>
+
+<p>We also want to know the candidate's email; otherwise, Peter won't be able to contact them. Create an <code class="language-python">EmailField</code>; Django uses the <code class="language-python">Emailnput</code> widget by default. Let's customize our email form with some attributes. For example, the placeholder attribute will add a caption to the form that tells a user what data is required:</p>
+
+<pre><code class="language-python">class EmailForm(forms.Form):
+    email = forms.EmailField(
+    label="Your Email",
+    widget=forms.EmailInput(attrs={'placeholder': 'Enter your email, please'}
+    )
+</code></pre>
+
+<p>Instead of an empty field, the user will see this:</p>
+
+<p><img alt="" height="106" name="2022-03-08 17_36_07-Window.png" src="https://ucarecdn.com/33656fb2-8d56-4800-8b8d-b5b8dc99a680/" width="578"></p>
+
+<p>Peter's eager to get started as soon as possible. So we should ask applicants to specify a date when they are ready to join the team. This can be resolved with the <code class="language-python">DateInput</code>, the default widget for <code class="language-python">DateField</code>. This widget is a tricky one. To display the date correctly, you need to additionally provide the widget with the type key and the date value:</p>
+
+<pre><code class="language-python">class DateForm(forms.Form):
+    start_date = forms.DateField(
+    label="When can you get started?",
+    widget=forms.DateInput(attrs={'type': 'date'}),
+    )
+</code></pre>
+
+<p>The last step is to render this form on the site using a template in an HTML file:</p>
+
+<pre><code class="language-html">&lt;input type="date"&gt;
+{{ date_form.start_date }}</code></pre>
+
+<p>Applicants will see that form with a calendar view:</p>
+
+<p><img alt="" height="526" name="2022-03-08 17_54_05-Window.png" src="https://ucarecdn.com/61d55561-449c-402f-ad40-70991a3a0fa6/-/crop/400x526/0,0/-/preview/" width="400"></p>
+
+<p>This calendar case helped us figure out exactly how the widget attributes work. To consolidate your knowledge, look at the diagram:</p>
+
+<p><img alt="" height="411" name="widgets1.png" src="https://ucarecdn.com/fa158f74-0426-468f-b25b-ef73837a826f/" width="960"></p>
+
+<p>We've only used two attributes, but that's not the whole list. You can read more about attributes in Django in the article <a target="_blank" target="_blank" target="_blank" target="_blank" href="https://django-gollum.readthedocs.io/en/latest/html.htm" rel="noopener noreferrer nofollow">Specifying HTML Attributes</a> by django-gollum<span style="background-color: transparent; color: #000000; font-size: 11pt; font-variant: normal;">.</span></p>
+
+<h5 id="how-to-decorate-a-widget-with-css">How to decorate a widget with CSS</h5>
+
+<p>As a final step of the questionnaire, Peter wants to collect the applicants' CVs. To do so, we can use <code class="language-python">FileField</code> and its default widget — <code class="language-python">ClearableFileInput</code>.</p>
+
+<p>Also, we can decorate the field using <a target="_blank" target="_blank" target="_blank" target="_blank" href="https://getbootstrap.com/docs/5.0/forms/form-control/" rel="noopener noreferrer nofollow">Bootstrap</a> class or any other CSS classes:</p>
+
+<pre><code class="language-python">class ResumeForm(forms.Form):
+    resume = forms.FileField(
+    label="Attach your CV"
+    widget=forms.ClearableFileInput(attrs={'class': 'form-control'})
+    )
+</code></pre>
+
+<p>By adding this attribute, your form will match your CSS:</p>
+
+<p><img alt="" height="126" name="2022-03-08 19_45_54-Window.png" src="https://ucarecdn.com/9f9f164d-712c-4e70-be3b-bd18e15f66c0/" width="547"></p>
+
+<p>If you want a deeper dive into the subject of CSS for attributes, the article <a target="_blank" target="_blank" target="_blank" target="_blank" href="https://django-gollum.readthedocs.io/en/latest/css.html" rel="noopener noreferrer nofollow">Specifying CSS Classes</a> by django-gollum will help you.</p>
+
+<p>The questionnaire for Peter is ready. Now he can ask the applicants all the necessary questions and choose the best candidates. We hope Peter will put together a development team and create the best indie game in his career. Let's have another look at our code:</p>
+
+<pre><code class="language-python">from django import forms
+
+
+SKILLS = [
+    ('cpp', 'C++'),
+    ('unreal', 'Unreal Engine'),
+    ('3d', '3D Modelling'),
+]
+
+CHOICES = [
+    ('programmer', 'C++ Programmer'),
+    ('modeller', '3D Modeller'),
+]
+
+
+class EmployeeForm(forms.Form):
+    
+    name = forms.CharField(
+    label="Your Name"
+    )
+
+    motivational = forms.CharField(
+    label="Why do you want to work on my game?",
+    widget=forms.Textarea()
+    )
+    
+    skills = forms.MultipleChoiceField(
+    label="What skills do you have?",
+    required=False,
+    widget=forms.CheckboxSelectMultiple(),
+    choices=SKILLS
+    )
+    
+    roles = forms.ChoiceField(
+    label="What role are you applying for?",
+    required=False,
+    widget=forms.RadioSelect(),
+    choices=CHOICES
+    )
+
+    email = forms.EmailField(
+    label="Your Email",
+    widget=forms.EmailInput(attrs={'placeholder': 'Enter your email, please'}
+    )
+
+    start_date = forms.DateField(
+    label="When can you get started?",
+    widget=forms.DateInput(attrs={'type': 'date'})
+    )
+
+    resume = forms.FileField(
+    label="Attach your CV",
+    widget=forms.ClearableFileInput(attrs={'class': 'form-control'})
+    )</code></pre>
+
+<p>It looks like this:</p>
+
+<p> <img alt="" height="857" name="2022-03-10 14_13_26-Создание города.png" src="https://ucarecdn.com/22f970d8-916d-4245-ad87-adbe023ab770/" width="663"></p>
+
+<p>Of course, that's not all that the widgets can do. We've only used a few of them in this topic. You can find more in the <a target="_blank" target="_blank" target="_blank" target="_blank" href="https://docs.djangoproject.com/en/4.0/ref/forms/widgets/" rel="noopener noreferrer nofollow">documentation</a>.</p>
+
+<h5 id="conclusion">Conclusion</h5>
+
+<p>In this topic, we've discussed default and non-default widgets, how to customize them, and decorate widgets with CSS. </p>
+
+<p>As you can see, widgets are a pretty helpful addition to form fields. They help you step away from the standard solutions and tailor the forms to your own needs.</p>

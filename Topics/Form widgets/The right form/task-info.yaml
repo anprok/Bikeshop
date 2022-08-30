@@ -1,0 +1,18 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: '&lt;code&gt;widget=TextInput()&lt;/code&gt;'
+- text: '&lt;code&gt;widgets=forms.TextInput()&lt;/code&gt;'
+- text: '&lt;code&gt;widget=forms.TextInput()&lt;/code&gt;'
+- text: '&lt;code&gt;widget=forms.InputText()&lt;/code&gt;'
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19521#comment
+status: Solved
+record: -1
+local_check: false

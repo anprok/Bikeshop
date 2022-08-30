@@ -1,0 +1,18 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: Only methods defined in template filters
+- text: All
+- text: Only methods that take no parameters
+- text: None of them
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/7639#comment
+status: Solved
+record: -1
+local_check: false

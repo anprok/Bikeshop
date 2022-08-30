@@ -1,0 +1,18 @@
+<h2>{{ object.name }}</h2>
+<p>frame: {{ object.frame }}</p>
+<p>seat: {{ object.seat }}</p>
+<p>tires: {{ object.tire }}</p>
+<p>basket: {% if object.has_basket > 0 %}yes{% else %}no{% endif %}</p>
+<p>description: {{ object.description }}</p>
+
+{% if show_form %}
+<form action="" method="post">
+    {% csrf_token %}
+    <p><label for="name">your name:</label><input id="name" type="text" name="name"></p>
+    <p><label for="surname">your surname:</label><input id="surname" type="text" name="surname"></p>
+    <p><label for="phone_number">your phone number:</label><input id="phone_number" type="text" name="phone_number"></p>
+    <input type="submit" value="Order">
+</form>
+{% else %}
+<p>Unfortunately, this bike is currently not available.</p>
+{% endif %}

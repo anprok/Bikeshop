@@ -1,0 +1,86 @@
+<h2>Admin interface</h2>
+<html><body><p>Often developers do not have interactive access to the database on the production server, even with the Python console. Then how can you manipulate data in the database? And what can your colleagues do with business objects if they don't know Python and Django at all?</p>
+<p>You're probably dreading having to write yet another web interface for that. Well, it's not all that bad: you'll need to write some code, but not as much as you think. Django provides a helpful admin interface to work with objects in it.</p>
+<h5 id="registering-models">Registering Models</h5>
+<p style="background: transparent; color: #1c1e29;"><span style="background: transparent; color: #1c1e29;">Initially, you don't have any models in the admin interface. In order to add them, you should register them in the </span><em style="background: transparent; color: #1c1e29;"><span style="background: transparent; color: #1c1e29;">admin.py</span></em><span style="background: transparent; color: #1c1e29;"> module. This module exists in each application by default.</span></p>
+<p style="background: transparent; color: #1c1e29;"><span style="background: transparent; color: #1c1e29;">Let's look at a hypothetical project. We are creating an online auction, but do not have much time to prepare the first release. </span>To avoid using external dependencies, we change the content of the site in the Django admin interface.<span style="background: transparent; color: #1c1e29;"> The models look like this:</span></p>
+<pre><code class="language-python">from django.contrib.auth.models import User
+from django.db import models
+
+
+class Lot(models.Model):
+    description = models.CharField(max_length=256)
+    initial_price = models.FloatField()
+
+
+class Bet(models.Model):
+    lot = models.ForeignKey(Lot, on_delete=models.CASCADE)
+    price = models.FloatField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)</code></pre>
+<p>To see models in the admin interface, add admin classes to each model and match them with the <code class="language-python">register</code> function. The content of admin classes can be the <code class="language-python">pass</code> keyword; it means that Django can configure it by itself. Let's see what we should add to the <em>admin.py</em> module.</p>
+<pre><code class="language-python">from django.contrib import admin
+from .models import Bet, Lot
+
+
+class BetAdmin(admin.ModelAdmin):
+    pass
+
+
+class LotAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Bet, BetAdmin)
+admin.site.register(Lot, LotAdmin)</code></pre>
+<p>We've registered our models. Now let's see what you can get from it.</p>
+<p></p><div class="alert alert-warning">You cannot register the same model twice with different ModelAdmin classes.</div><p></p>
+<h5 id="admin-interface">Admin Interface</h5>
+<p>Admins are not ordinary users; they are <em>superusers</em> in Django terminology. To use the interface, create a superuser account if you don’t have one already. Also, do not remove <code class="language-python">path('admin/', admin.site.urls)</code> from the default configuration of the main <em>urls.py</em> module of your project.</p>
+<p>If you're done with all preparations, run <code class="language-python">python manage.py runserver</code> from the console and go to '<em>http://localhost:8000/admin</em>' URL in your browser. You should log in with a superuser account.</p>
+<p style="text-align: center;"><img alt="" height="356" src="https://ucarecdn.com/d2ca2c0d-ad5f-4a3d-9f40-87fadb8a6763/" width="865"/></p>
+<p>Now you're able to add, change or delete <em>Users</em>, <em>Groups</em>, <em>Bets</em> and <em>Lots</em>. Try to check out every link and change the objects you want: it will help you get familiar with the interface.</p>
+<p>All objects in the database have a page, and you can see and change the object's content on it.</p>
+<p style="text-align: center;"><img alt="" height="646" src="https://ucarecdn.com/d7c255ca-8412-446b-881b-efddffc4382b/" width="742"/></p>
+<p>You already know how to fill the content of the service through the web interface. Let's now learn how we can upgrade it and add restrictions and modifications.</p>
+<h5 id="customize-fields">Customize Fields</h5>
+<p>Not all data should be available for making changes: for example, the clients won't be happy if we adjust their bets. No matter how honest developers and business users are, it's better to forbid them to change any data in <code class="language-python">Bet</code> objects.</p>
+<p>The instance of the <code class="language-python">ModelAdmin</code> class has a lot of customizable attributes. The <code class="language-python">fields</code> attribute is the list of model's fields you want to display on a page. The <code class="language-python">readonly_fields</code> is the list of fields that all admins can see but not modify. Both attributes can be <code class="language-python">tuple</code> or <code class="language-python">list</code> instances.</p>
+<pre><code class="language-python">class BetAdmin(admin.ModelAdmin):
+    fields = ('lot', 'price', 'user')
+    readonly_fields = ('lot', 'price', 'user')</code></pre>
+<p>Now you can check that you see all the data but cannot modify any bets. You can choose by yourself what to include on a page removing some elements from the list.</p>
+<p></p><div class="alert alert-primary">The <em>readonly_fields</em> attribute should be a subset of <em>fields</em> attribute, otherwise not all elements from read-only fields will be present on a page.</div><p></p>
+<h5 id="additional-fields">Additional Fields</h5>
+<p>It's great to get the plain data from the tables<span style="color: #ff4363;"> </span>with several lines of code, but how do we add more information from the database?</p>
+<p>We want to see which lots are trending. In our case, it's the lots with 10 bets or more. There is no such field in a model, but we can prepare the <code class="language-python">ModelAdmin</code> 's field with this value. We choose any name we want (unless it intersects with the existing attribute of the class). Look through the attributes in the <a href="https://docs.djangoproject.com/en/2.2/_modules/django/contrib/admin/options/#ModelAdmin" rel="noopener noreferrer nofollow" target="_blank">source code</a>. We add a <code class="language-python">trending</code> method and add a string '<em>trending</em>' to the <code class="language-python">fields</code> list.</p>
+<pre><code class="language-python">class LotAdmin(admin.ModelAdmin):
+    fields = ('description', 'initial_price', 'trending')
+    readonly_fields = ('trending',)
+
+    def trending(self, obj):
+        return '🔥' if obj.bet_set.count() &gt;= 10 else '❄'</code></pre>
+<p>After you've added the custom field, you can see if a lot is <em>trending</em> or not. Besides strings, a method may return any other Python objects converting them to strings implicitly.</p>
+<p></p><div class="alert alert-primary">Do not forget to add a custom field to <em>readonly_fields</em> list, otherwise, it will be an error: custom fields are not modifiable.</div><p></p>
+<h5 id="inline-admin-field">Inline Admin Field</h5>
+<p>We can add any fields we like if they are custom values or parts of a model. But can we display all the bets for a lot on the page? We can use the inline fields for that.</p>
+<p>This time, we need to create an additional class for displaying each inline object. We want to add bets to a page with the lot, so we need to create the <code class="language-python">TabularInline</code> class for the <code class="language-python">Bet</code> model.</p>
+<pre><code class="language-python">from django.contrib import admin
+from .models import Bet, Lot
+
+
+class BetInline(admin.TabularInline):
+    can_delete = False
+    model = Bet
+    readonly_fields = ('price', 'user')
+
+
+class LotAdmin(admin.ModelAdmin):
+    inlines = (BetInline,)
+
+
+admin.site.register(Lot, LotAdmin)</code></pre>
+<p>We don't register the <code class="language-python">BetInline</code> class because we cannot use it independently, but we define the <code class="language-python">model</code> attribute for it. We restrict actions for this class with read-only fields and set <code class="language-python">can_delete</code> attribute to <code class="language-python">False</code> to prevent deleting bets by the admin user.</p>
+<p>In the <code class="language-python">LotAdmin</code> class we define the <code class="language-python">inlines</code> attribute and add the <code class="language-python">BetInline</code> to it.</p>
+<p>That's it, now all bets with the lot item are displayed on the same page.</p>
+<p></p><div class="alert alert-primary">You can create multiple different inline classes for the same model.</div><p></p>
+<p>There are a lot of options available for you to modify default classes, and you can <a href="https://docs.djangoproject.com/en/2.2/ref/contrib/admin/#modeladmin-options" rel="noopener noreferrer nofollow" target="_blank">read more</a> about it if you like.</p></body></html>

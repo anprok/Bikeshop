@@ -1,0 +1,23 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    from django.urls import path
+    from django.views import View
+
+
+    class ContactsView(View):
+        pass
+
+
+    urlpatterns = [
+
+    ]
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/8761#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Sun, 28 Aug 2022 12:42:06 UTC
+record: -1

@@ -1,0 +1,25 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    from django import forms
+
+    FREQ = [
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+    ]
+
+    class CommentForm(forms.Form):
+        name = ...
+        comment = ...
+        email = ...
+        frequency = ...
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19530#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Tue, 30 Aug 2022 08:02:22 UTC
+record: -1

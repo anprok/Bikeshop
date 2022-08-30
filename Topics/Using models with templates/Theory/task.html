@@ -1,0 +1,78 @@
+<h2>Using models with templates</h2>
+<html><body><p>The advantage of using a framework is that all its parts are easily combinable. We have <em>templates</em> to render HTML pages and<em> models</em> to work with the database. If you are entertaining the idea of using them together, you're right to do so.  </p>
+<p>This time we'll focus not only on simple HTML layout, but on <em>forms</em> that are used for communication with the server and sending data to it.</p>
+<h5 id="passing-object-to-template">Passing Object to Template</h5>
+<p>Do you like music? Do you like it as much as creating your own music service? With this service you'll be able to listen to a variety of tracks, search for specific songs and mark your favorite ones. We don't need much for the first prototype – let's use Django's <code class="language-python">User</code> model and define another one ourselves:</p>
+<pre><code class="language-python">from django.contrib.auth.models import User
+from django.db import models
+
+
+class Song(models.Model):
+    title = models.CharField(max_length=128)
+    artist = models.CharField(max_length=128)
+    path_to_file = models.FileField(upload_to='static/')
+    favorite_by = models.ManyToManyField(User, related_name='favorite_songs')</code></pre>
+<p>We can pass a context dictionary to the template to fill it with data. Assume that we have an instance of <code class="language-python">Song</code> class in a <code class="language-python">song</code> variable. In this case our context dictionary will be simply <code class="language-python">{'song': song}</code>. In models, all fields will be available for template layout; you can even access foreign keys and their fields.</p>
+<p>Using fancy CSS for our prototype seems a tinge unnecessary, so let's create a very moderate HTML template:</p>
+<pre><code class="language-django">&lt;h4&gt;{{ song.artist }} - {{ song.title }}&lt;/h4&gt;
+&lt;audio controls&gt;
+    &lt;source src="/static/{{ song.path_to_file }}" type="audio/mp3"&gt;
+&lt;/audio&gt;</code></pre>
+<p>The result looks like this:</p>
+<p><img alt="" src="https://ucarecdn.com/0faf616d-475f-4392-99e0-a0e29daa86ce/"/></p>
+<p>All attributes of models are accessed through the dot. The <code class="language-python">path_to_file</code> is a relative path to a file from <code class="language-python">upload_to</code> directory we choose in the model. We don't redefine the default value for static files in <em>settings.py</em> module and use the "<em>static</em>" folder for it as a file source prefix.</p>
+<p></p><div class="alert alert-primary">To make the static files directory work, you should first create it in the root of your project and then define <a href="https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-STATICFILES_DIRS" rel="noopener noreferrer nofollow" target="_blank">STATICFILES_DIRS</a> in the <em>settings.py</em> module.</div><p></p>
+<h5 id="forms">Forms</h5>
+<p>One of the best features of music services is the possibility to create playlists with favorite songs; our service definitely needs that! We extend the existing template with a <em>form</em> to use it in <em>POST</em> requests:</p>
+<pre><code class="language-django">&lt;form action="/add_to_favorites" method="post"&gt;
+   {% csrf_token %}
+   &lt;input type="hidden" name="song_id" value="{{ song.id }}"&gt;
+   &lt;button type="submit"&gt;Add to favorites&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+<p>We access the <code class="language-python">id</code> field of a variable through the dot. If you looked closely at the code, you surely noticed we're also using a cryptic tag <code class="language-python">{% csrf_token %}</code>. <strong>CSRF</strong> is an abbreviation for <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" rel="noopener noreferrer nofollow" target="_blank">Cross-Site Request Forgery</a>. We don't want any fraud action to happen, so in forms we must always use this tag to secure our applications. CSRF token is a generated sequence of symbols that the server uses to identify a user's session. If the sequence matches, the form is considered reliable.</p>
+<p>Now we have a form to send to the server; it will process the request and add the song of our choice to favorites.</p>
+<p><img alt="" src="https://ucarecdn.com/0a20208c-d511-4999-a969-f6a1ef2eae14/"/></p>
+<p></p><div class="alert alert-primary">Your request will work only if your application has a POST handler for the address "<em>/add_to_favorites</em>". You can find this URL in the action field of the form.</div><p></p>
+<h5 id="many-objects">Many Objects</h5>
+<p>A whole playlist will be shown on the main page, and here it's slightly different from having just one object per page. Using a<span style="color: #ff4363;"> </span><code class="language-python">for</code><span style="color: #ff4363;"> </span>loop and a QuerySet would work well for a situation like that.</p>
+<p>We create a new page and change the context data passed to the template. Ten or fewer random songs from the database will appear; now our context data are  <code class="language-python">{'songs': Song.objects.all()[:10]}</code>:</p>
+<pre><code class="language-django">{% for song in songs %}
+&lt;div&gt;
+   &lt;h4&gt;{{ song.artist }} - {{ song.title }}&lt;/h4&gt;
+   &lt;div&gt;{{ song.favorite_by.count }} likes&lt;/div&gt;
+&lt;/div&gt;
+{% endfor %}</code></pre>
+<p>Why stop here? Let's add another great feature to our server and for each song display the number of users who added it to their favorites. To do this, access a user's QuerySet with <code class="language-python">favorite_by</code> attribute defined in the model and call the <code class="language-python">count</code> method on it. As for other Python objects, the only candidates for templates are methods with no parameters;<code class="language-python">count</code> is one of them.</p>
+<p>Now the users can see which songs are really popping and rocking! </p>
+<p><img alt="" src="https://ucarecdn.com/4c256de0-24aa-4bdb-805f-c403abccfaff/"/></p>
+<p></p><div class="alert alert-primary">It's usually better to calculate such data at a stage of processing the request in a handler. We should define only the representation of a page in our template.</div><p></p>
+<h5 id="using-filters">Using Filters</h5>
+<p>Django provides filters for processing values in templates. Sometimes they can really save us time, yet they may also yield surprising results. The template processor uses the string representation of an object, which has its pros and cons.<span style="color: #ff4363;"> </span>Being careful with that is the key to getting the most of Django.</p>
+<p>Let's slightly change the template from the previous example:</p>
+<pre><code class="language-django">{% for song in songs %}
+&lt;div&gt;
+   &lt;h4&gt;{{ song.artist }} - {{ song.title }}&lt;/h4&gt;
+   &lt;div&gt;Loved by {{ song.favorite_by.all|random }}&lt;/div&gt;
+&lt;/div&gt;
+{% endfor %}</code></pre>
+<p>We render a random <code class="language-python">User</code> who liked a song (provided we have the user's consent, of course). Upon receiving the QuerySet, we pass it to the <code class="language-python">random</code> filter to get one username to show.</p>
+<p>Though this feature is quite experimental, it still has a chance to win the hearts of our users, so let's render five of them instead of just one:</p>
+<pre><code class="language-django">{% for song in songs %}
+&lt;div&gt;
+   &lt;h4&gt;{{ song.artist }} - {{ song.title }}&lt;/h4&gt;
+   &lt;div&gt;Loved by: {{ song.favorite_by.all|slice:5 }}&lt;/div&gt;
+&lt;/div&gt;
+{% endfor %}</code></pre>
+<p>We sliced the QuerySet and limited its length to five items: what could go wrong? Yet when we open the browser, we get a strange output:</p>
+<p><img alt="" src="https://ucarecdn.com/6cc95ab7-73a8-4383-9b39-97ee0f0242ba/"/></p>
+<p>What kind of English is that? It seems like Django converted the QuerySet to a string and rendered it to HTML. It's not a result to be particularly proud of. Don't lose heart though as we have another trick up our sleeve:</p>
+<pre><code class="language-django">{% for song in songs %}
+&lt;div&gt;
+   &lt;h4&gt;{{ song.artist }} - {{ song.title }}&lt;/h4&gt;
+   &lt;div&gt;Loved by: {{ song.favorite_by.all|slice:5|unordered_list }}&lt;/div&gt;
+&lt;/div&gt;
+{% endfor %}</code></pre>
+<p>This time we prudently convert all values to an HTML <a href="https://docs.djangoproject.com/en/2.2/ref/templates/builtins/#unordered-list" rel="noopener noreferrer nofollow" target="_blank">unordered list</a> with the <code class="language-python">unordered_list</code> filter, and our output now looks quite satisfying:</p>
+<p><img alt="" src="https://ucarecdn.com/0a6fca82-9784-4702-b6a2-e3e18da98754/"/></p>
+<h5 id="conclusion">Conclusion</h5>
+<p>There are ways to take this idea further and really elaborate: for example, one could think of the best and most convenient design for the users. You could think about that too, or make your own application and share your skills and the fruit of your labor with your friends. The main thing is – you know enough to start making pages using Django models.</p></body></html>

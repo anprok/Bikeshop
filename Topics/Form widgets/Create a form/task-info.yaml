@@ -1,0 +1,16 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: |-
+    from django import forms
+
+    class CommentForm(forms.Form):
+        ...
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/19527#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Tue, 30 Aug 2022 07:48:58 UTC
+record: -1

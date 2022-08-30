@@ -1,0 +1,18 @@
+type: choice
+is_multiple_choice: false
+options:
+- text: Zero or more
+- text: It depends on a Model
+- text: One or more, but not zero
+- text: Only one
+files:
+- name: main.py
+  visible: true
+  text: |+
+    #  You can experiment here, it won’t be checked
+
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/7011#comment
+status: Solved
+record: -1
+local_check: false

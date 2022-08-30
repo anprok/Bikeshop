@@ -1,0 +1,12 @@
+type: code
+files:
+- name: main.py
+  visible: true
+  text: red_fast_cars = ...
+  learner_created: false
+feedback_link: https://hyperskill.org/learn/step/7014#comment
+status: Solved
+feedback:
+  message: <html>Correct solution</html>
+  time: Sun, 28 Aug 2022 12:21:02 UTC
+record: -1
